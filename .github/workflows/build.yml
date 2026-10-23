@@ -1,0 +1,26 @@
+name: Build and Test
+
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build application
+        run: gcc -std=c99 -Wall -Wextra -Isrc -o srs_app src/main.c src/auth.c src/ui.c src/actions_stub.c
+      - name: Build unit tests
+        run: gcc -std=c99 -Wall -Wextra -Isrc -o test_auth tests/test_auth.c src/auth.c
+      - name: Run unit tests
+        run: ./test_auth
+      - name: Smoke test (login menu then exit)
+        run: printf '2\ny\n' | ./srs_app
