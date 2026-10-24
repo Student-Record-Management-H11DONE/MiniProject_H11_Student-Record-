@@ -22,5 +22,11 @@ jobs:
         run: gcc -std=c99 -Wall -Wextra -Isrc -o test_auth tests/test_auth.c src/auth.c
       - name: Run unit tests
         run: ./test_auth
+      - name: Build NFR tests
+        run: gcc -std=c99 -Wall -Wextra -Isrc -o test_nfr tests/test_nfr.c src/auth.c
+      - name: Run NFR tests
+        run: ./test_nfr
       - name: Smoke test (login menu then exit)
         run: printf '2\ny\n' | ./srs_app
+      - name: Stability test (bad input must not crash)
+        run: printf 'abc\n9\n\n2\nn\n2\ny\n' | ./srs_app
