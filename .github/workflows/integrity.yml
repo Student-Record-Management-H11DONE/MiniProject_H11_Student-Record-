@@ -1,0 +1,26 @@
+name: Integrity and Storage Tests
+
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  integrity-storage:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Integrity tests (NFR-03)
+        run: gcc -std=c99 -Wall -Wextra -Isrc -o test_integrity tests/test_integrity.c src/integrity.c && ./test_integrity
+      - name: Validation tests
+        run: gcc -std=c99 -Wall -Wextra -Isrc -o test_validation tests/test_validation.c src/validation.c && ./test_validation
+      - name: Storage tests
+        run: gcc -std=c99 -Wall -Wextra -Isrc -o test_student_storage tests/test_student_storage.c src/student_storage.c src/validation.c && ./test_student_storage
+      - name: Persistence test (save, then load in a new process)
+        run: gcc -std=c99 -Wall -Wextra -Isrc -o test_persistence tests/test_persistence.c src/student_storage.c src/validation.c && ./test_persistence save && ./test_persistence load
