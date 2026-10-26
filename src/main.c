@@ -38,8 +38,8 @@ static int do_login(Session *session)
     AuthResult r;
 
     ui_banner("Login");
-    if (!ui_read_line("Username: ", user, sizeof user)) return 0;
-    if (!ui_read_line("Password: ", pass, sizeof pass)) return 0;
+    if (!ui_read_line("Username:", user, sizeof user)) return 0;
+    if (!ui_read_line("Password:", pass, sizeof pass)) return 0;
 
     r = login(user, pass);
     if (!r.success) {
@@ -82,7 +82,7 @@ static int run_main_menu(const Session *s)
         printf("  %d. Logout\n", n + 1);
         printf("  %d. Exit\n", n + 2);
 
-        c = ui_read_choice("Enter choice: ", 1, n + 2);
+        c = ui_read_choice("Enter choice:", 1, n + 2);
         if (c == -1) return 0;                         /* end of input: exit safely */
         if (c == n + 1) {
             ui_info("Logged out.");
@@ -120,7 +120,7 @@ int main(void)
 
         ui_banner("Student Record System");
         printf("  1. Login\n  2. Exit\n");
-        c = ui_read_choice("Enter choice: ", 1, 2);
+        c = ui_read_choice("Enter choice:", 1, 2);
         if (c == -1) break;
         if (c == 2) {
             if (ui_confirm("Are you sure you want to exit?")) break;
