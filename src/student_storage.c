@@ -1,7 +1,7 @@
 
 #include "student_storage.h"
 #include "validation.h"
-
+#include "integrity.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -83,6 +83,10 @@ int student_storage_save(const char *path,
             return 0;
         }
     }
+            /* NFR-03: refuse to save duplicate Student IDs. */
+       if (!integrity_records_consistent(records, count)) {
+           return 0;
+       }
 
     file = fopen(path, "w");
     if (file == NULL) {
@@ -213,6 +217,10 @@ int student_storage_load(const char *path,
     if (fclose(file) != 0) {
         return 0;
     }
+           /* NFR-03: reject files containing duplicate Student IDs. */
+       if (!integrity_records_consistent(records, loaded)) {
+           return 0;
+       }
 
     *count = loaded;
     return 1;
