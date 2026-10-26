@@ -2,6 +2,7 @@
 
 | NFR | Requirement | How it is met | Where | Verified by |
 |-----|-------------|---------------|-------|-------------|
+| NFR-03 | Data integrity | No duplicate Student IDs (case-insensitive) and consistent records. Checked on every save and load. | integrity.c (integrity_records_consistent), student_storage.c | test_integrity.c, test_storage_integrity.c, CI workflow integrity.yml |
 | NFR-04 | Error handling and stability | Invalid menu input is rejected and re-prompted. Empty or NULL login input is handled. End-of-input exits safely. | ui.c (ui_read_choice, ui_read_line), auth.c (login), main.c | test_nfr.c (NFR-04 section), CI stability test |
 | NFR-05 | Modular and maintainable design | Code is split into ui, auth, actions and main modules, each with a header file. | src/ | Code review, same build on every push |
 | NFR-08 | Prevent unauthorized modification | Each role has an allowed-action list. The menu hides forbidden actions. main.c checks again before running one. | auth.c (has_permission), main.c | test_nfr.c (NFR-08 section) |
