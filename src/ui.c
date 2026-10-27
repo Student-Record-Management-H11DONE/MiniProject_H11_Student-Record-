@@ -80,7 +80,7 @@ int ui_confirm(const char *question)
     char buf[64];
     char prompt[160];
 
-    snprintf(prompt, sizeof prompt, "%s (y/n): ", question);
+    snprintf(prompt, sizeof prompt, "%s (y/n):", question);
     for (;;) {
         if (!ui_read_line(prompt, buf, sizeof buf)) {
             return 1; /* end of input: proceed */
