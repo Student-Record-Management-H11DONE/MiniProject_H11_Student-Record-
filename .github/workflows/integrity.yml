@@ -1,4 +1,4 @@
-name: Integrity and Storage Tests
+name: Integrity, Storage and NFR Tests
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
     branches: [ main ]
 
 jobs:
-  integrity-storage:
+  integrity-storage-nfr:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
@@ -26,3 +26,7 @@ jobs:
         run: gcc -std=c99 -Wall -Wextra -Isrc -o test_storage_integrity tests/test_storage_integrity.c src/student_storage.c src/validation.c src/integrity.c && ./test_storage_integrity
       - name: Persistence test (save, then load in a new process)
         run: gcc -std=c99 -Wall -Wextra -Isrc -o test_persistence tests/test_persistence.c src/student_storage.c src/validation.c src/integrity.c && ./test_persistence save && ./test_persistence load
+      - name: Backup & Disaster Recovery tests (NFR-06, NFR-07)
+        run: gcc -std=c99 -Wall -Wextra -Isrc -o test_backup tests/test_backup.c src/backup.c src/student_storage.c src/validation.c src/integrity.c && ./test_backup
+      - name: Performance & Scalability benchmark tests (NFR-02, NFR-11)
+        run: gcc -std=c99 -Wall -Wextra -Isrc -o test_performance tests/test_performance.c src/student_storage.c src/validation.c src/integrity.c && ./test_performance
