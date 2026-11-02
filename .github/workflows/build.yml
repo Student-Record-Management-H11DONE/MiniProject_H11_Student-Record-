@@ -16,6 +16,13 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install web backend dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Run web backend tests
+        run: python -m unittest discover -s tests -p test_backend.py -v
       - name: Build application
         run: gcc -std=c99 -Wall -Wextra -Isrc -o srs_app src/main.c src/auth.c src/ui.c src/actions_stub.c
       - name: Build unit tests
