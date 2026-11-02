@@ -3,10 +3,14 @@
 USE student_records;
 
 ALTER TABLE grades
-  ADD COLUMN component ENUM('ISA1', 'ISA2', 'ESA') NOT NULL DEFAULT 'ISA1',
+  ADD COLUMN component ENUM('ISA1', 'ISA2', 'ESA') NOT NULL DEFAULT 'ISA1';
+
+ALTER TABLE grades
   DROP INDEX uq_grades_student_subject,
   ADD UNIQUE KEY uq_grades_student_subject_component
-    (student_id, subject, component),
+    (student_id, subject, component);
+
+ALTER TABLE grades
   ALTER COLUMN component DROP DEFAULT;
 
 CREATE TABLE grade_windows (
