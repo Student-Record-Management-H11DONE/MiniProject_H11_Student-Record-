@@ -1,0 +1,23 @@
+# Sprint 1 Manual Test Checklist (FR-01–FR-13)
+
+Use the seeded accounts after applying the Sprint 1 database migration and seed script. For restricted-route tests, make the request while authenticated as the role named in the test. Send the session cookie and CSRF header for mutation requests. Actual results are intentionally blank for execution.
+
+| Test | Steps | Expected result | Actual result / Pass-Fail |
+|---|---|---|---|
+| TC-FR-01 — Administrator login | Sign in as `admin` with its configured password. | Login succeeds; Administrator Dashboard and Overview / Students navigation are shown. | |
+| TC-FR-01 — Faculty login | Sign in as `faculty1` with its configured password. | Login succeeds; Students / Grades navigation is shown; student management controls are absent. | |
+| TC-FR-01 — Student login | Sign in as `student1` and then `student2` with their configured passwords. | Each login succeeds; My Profile / My Grades are shown, linked to the correct student. | |
+| TC-FR-02 — Invalid and empty credentials | Submit blank username/password; then submit a valid username with a wrong password. | Blank input shows “Please enter your username and password.” Wrong credentials show “Invalid username or password.” No authenticated session is created; retry remains possible. | |
+| TC-FR-03/04 — Role-based navigation and sign out | Log in once for each role; inspect visible navigation/actions; select Sign out. | Only that role’s permitted pages/actions appear. Sign out returns to login and protected API requests return 401. | |
+| TC-FR-05 — Add student | As admin, add a student with unique ID, name, contact, course, and semester. | Save succeeds; the record appears in Students and its detail view contains every submitted field. | |
+| TC-FR-06 — Duplicate Student ID | As admin, add a record using an existing Student ID. | Save is rejected with “Student ID already exists.” Existing record remains unchanged. | |
+| TC-FR-07/08 — Student detail authorization | As admin and faculty, view either seeded student. As `student1`, view S001, then request S002 directly with `GET /api/students/S002`. | Admin/faculty can view all details. Student can view only S001; the S002 request returns 403. | |
+| TC-FR-09 — Search | As admin/faculty, search by a full/partial Student ID and by a name; search an unknown value; submit an empty search. | Matching records appear. No match shows “No matching student record was found.” Empty search shows “Please enter a Student ID or name to search.” | |
+| TC-FR-10 — Update student | As admin, update all fields of an existing record and save; then open Update and cancel; submit invalid/blank data; request an unknown ID with `PUT /api/students/UNKNOWN`. | Valid changes persist. Cancel discards changes. Invalid data is rejected without saving. Unknown ID returns “Student record not found.” | |
+| TC-FR-11 — Delete student | As admin, start deleting a test student and choose Cancel; repeat and Confirm. Try deleting an unknown ID directly. | Cancel keeps the record. Confirm removes the student and linked grades/account. Unknown ID returns “Student record not found.” | |
+| TC-FR-12 — Record grade | As faculty, choose a student and subject and save an integer mark from 0 to 100. Try a missing student and a subject absent from the subjects table through the API. | Valid grade appears in the selected student’s table. Missing student/subject returns “Student or subject not found.” | |
+| TC-FR-13 — Update and view grades | As faculty, update an existing grade; as the linked student, open My Grades; try to use a fractional or out-of-range mark. | Faculty can update the mark; student sees their own grades read-only. Invalid marks return “Marks must be between 0 and 100.” | |
+| SEC-01 — Authentication | Submit an invalid username/password directly to `POST /api/login`, then call `GET /api/session`. | Login returns 401 with “Invalid username or password.” Session remains unauthenticated. | |
+| SEC-02 — Restricted backend actions | As faculty/student, call `POST/PUT/DELETE /api/students`; as admin/student, call `POST/PUT /api/grades`; as admin, try student grade reads; as student, export/list/search other students. | Unauthorized calls return 403 and do not change data or disclose other students’ records. | |
+| SEC-03 — Export authorization | Sign in as admin/faculty and export filtered records; then try `GET /api/students/export` as student. | Admin/faculty export only authorized matching records. Student receives 403. | |
+| Sample data — Departments and semesters | After running migration 002 and the seed script, filter each of the four departments by semesters 1–8. | Each department/semester combination has at least 20 sample students; semester selectors stop at 8. | |
