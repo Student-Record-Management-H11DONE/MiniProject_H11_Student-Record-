@@ -11,7 +11,6 @@
 7. Demo credentials are auto-created in users.csv on first run (admin/faculty1/student1).
 
 ## Sprint-2 Deviations & Implementation Notes
-
-8. **NFR-07 Safe File Replacement on Windows:** In standard ISO C (`<stdio.h>`), `rename()` fails on Windows if the target destination file already exists. Therefore, `student_storage_save_atomic()` performs `remove(path)` immediately before `rename(temp_path, path)`. This provides safe temp-file replacement (protecting the original file if data validation or writing fails midway), though on Windows the file replacement is quasi-atomic due to runtime library behavior.
+   8. In ISO C99 on Windows, rename() fails if the destination already exists. student_storage_save_atomic() therefore writes to path.tmp, moves the existing file to path.old, renames path.tmp to path, and deletes path.old. If the second rename fails, path.old is restored. This is a safe temporary-file replacement, not an OS-level atomic operation (standard C has none on Windows).
 9. **NFR-06 & NFR-07 Module Integration:** The backup (`backup_create`, `backup_restore`) and safe atomic save functions are currently implemented as a modular C library in `src/backup.c` and exercised through automated unit tests (`tests/test_backup.c`), rather than being wired into the interactive `main.c` menu.
 10. **Dual Implementation Track (Web App vs. C Core):** In Sprint-2, the team integrated a Flask/MySQL web application (`backend/` and `web/` merged in PR #51) for graphical browser workflows, while the C console implementation serves as the core system and automated NFR verification track.
