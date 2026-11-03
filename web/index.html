@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f6f8">
+    <title>Student Records</title>
+    <link rel="stylesheet" href="/web/styles.css">
+    <script src="/web/app.js" defer></script>
+  </head>
+  <body>
+    <main id="login-screen" class="login-screen">
+      <section class="login-card" aria-labelledby="login-title">
+        <div class="brand login-brand"><span class="brand-mark" aria-hidden="true">SR</span><span>Student Records</span></div>
+        <div class="login-copy">
+          <span class="eyebrow">COLLEGE ADMINISTRATION</span>
+          <h1 id="login-title">Sign in</h1>
+          <p>Enter your account credentials to continue.</p>
+        </div>
+        <form id="login-form" class="form-stack" novalidate>
+          <label for="username">Username <span class="required-mark">*</span></label>
+          <input id="username" name="username" autocomplete="username" maxlength="63">
+          <label for="password">Password <span class="required-mark">*</span></label>
+          <div class="password-field">
+            <input id="password" name="password" type="password" autocomplete="current-password">
+            <button id="toggle-password" class="password-toggle" type="button" aria-label="Show password">Show</button>
+          </div>
+          <p id="login-error" class="form-error" role="alert"></p>
+          <button class="button button-primary login-submit" type="submit">Sign in</button>
+        </form>
+      </section>
+      <aside class="login-aside" aria-label="Student Records">
+        <div class="login-aside-content">
+          <span class="eyebrow">STUDENT RECORD MANAGEMENT</span>
+          <h2>Student Records</h2>
+          <p>Secure access to student information and academic records.</p>
+        </div>
+      </aside>
+    </main>
+
+    <div id="app-screen" class="app-shell" hidden>
+      <aside id="sidebar" class="sidebar">
+        <div class="brand sidebar-brand"><span class="brand-mark" aria-hidden="true">SR</span><span>Student Records</span></div>
+        <div class="workspace-label">NAVIGATION</div>
+        <nav id="side-nav" class="side-nav" aria-label="Main navigation"></nav>
+        <section id="side-nav-tools" class="side-nav-tools" aria-label="Selected class tools" hidden>
+          <div class="workspace-label">CLASS TOOLS</div>
+          <nav id="class-tool-nav" class="side-nav"></nav>
+        </section>
+        <div class="sidebar-bottom">
+          <div class="sidebar-help"><strong id="sidebar-role">Account</strong><p>Student Record Management System</p></div>
+          <button id="logout-button" class="logout-button" type="button">Sign out</button>
+        </div>
+      </aside>
+
+      <div class="main-column">
+        <header class="topbar">
+          <div class="topbar-navigation">
+            <button id="menu-button" class="icon-button mobile-menu" type="button" aria-label="Open navigation">Menu</button>
+            <button id="back-button" class="button button-secondary back-button" type="button" aria-label="Go back" hidden>← Back</button>
+            <div class="breadcrumb"><span>Student Records</span><span aria-hidden="true">/</span><strong id="breadcrumb-current">Dashboard</strong></div>
+          </div>
+          <div class="topbar-right">
+            <span id="user-role" class="role-badge">Administrator</span>
+            <button id="profile-button" class="profile-button" type="button" aria-label="Sign out">
+              <span id="user-avatar" class="user-avatar">A</span>
+              <span class="profile-label"><strong id="user-name">Account</strong><small>Signed in</small></span>
+            </button>
+          </div>
+        </header>
+
+        <main class="page-content">
+          <section id="view-overview" class="page-view" hidden>
+            <div class="page-heading">
+              <div><span class="eyebrow">ADMINISTRATION</span><h1>Administrator Dashboard</h1><p>Student record summary.</p></div>
+            </div>
+            <section class="stats-grid" aria-label="Student summary">
+              <button id="open-students-card" class="stat-card stat-card-button" type="button" aria-label="View all student records">
+                <span>Total students</span><strong id="total-students" class="stat-value">0</strong><small>View all student records</small>
+              </button>
+              <button id="open-departments-card" class="stat-card stat-card-button" type="button" aria-label="View departments">
+                <span>Departments</span><strong id="total-courses" class="stat-value">0</strong><small id="department-card-caption">Browse departments and their student records</small>
+              </button>
+            </section>
+          </section>
+
+          <section id="view-departments" class="page-view" hidden>
+            <div class="page-heading">
+              <div><span class="eyebrow">STUDENT DIRECTORY</span><h1>Departments</h1><p>Select one of the departments below to view its student records.</p></div>
+            </div>
+            <section id="department-list" class="department-grid" aria-label="Departments"></section>
+          </section>
+
+          <section id="view-faculty-access" class="page-view" hidden>
+            <div class="page-heading">
+              <div><span class="eyebrow">ACCESS MANAGEMENT</span><h1>Faculty Access</h1><p>Assign only the subjects each faculty member teaches.</p></div>
+            </div>
+            <section class="records-card faculty-access-card">
+              <div class="records-heading">
+                <div><h2>Subject assignments</h2><p>Faculty access is assigned per department, semester, and subject.</p></div>
+                <button id="create-faculty-button" class="button button-primary" type="button">Create Faculty</button>
+              </div>
+              <label class="faculty-selector-label" for="faculty-selector">Faculty member</label>
+              <select id="faculty-selector"><option value="">Select a faculty member</option></select>
+              <p id="faculty-access-message" class="inline-message" role="status" hidden></p>
+              <p id="faculty-no-accounts" class="empty-state" hidden><strong>No faculty accounts found.</strong><span>Create a faculty account before assigning access.</span></p>
+              <div id="faculty-assignment-panel" hidden>
+                <div id="faculty-assignment-grid" class="faculty-assignment-grid"></div>
+                <div class="assignment-footer">
+                  <span id="faculty-assignment-summary"></span>
+                  <div class="assignment-actions">
+                    <button id="edit-faculty-assignments" class="button button-secondary" type="button">Edit assignments</button>
+                    <button id="cancel-faculty-assignments" class="button button-secondary" type="button" hidden>Cancel</button>
+                    <button id="save-faculty-assignments" class="button button-primary" type="button" hidden>Save assignments</button>
+                  </div>
+                </div>
+                <p id="faculty-assignment-save-message" class="inline-message" role="status" hidden></p>
+              </div>
+            </section>
+          </section>
+
+          <section id="view-grade-windows" class="page-view" hidden>
+            <div class="page-heading">
+              <div><span class="eyebrow">ASSESSMENT SCHEDULE</span><h1>Grade Windows</h1><p>Set the dates when faculty can enter or change ISA and ESA marks.</p></div>
+            </div>
+            <section id="grade-window-department-step" class="department-grid" aria-label="Departments for grade windows"></section>
+            <section id="grade-window-semester-step" hidden>
+              <div class="records-heading">
+                <div><h2 id="grade-window-course-title"></h2><p>Select a semester to configure its assessment dates.</p></div>
+                <button id="grade-window-back-departments" class="button button-secondary" type="button">Departments</button>
+              </div>
+              <div id="grade-window-semesters" class="department-grid" aria-label="Semesters for grade windows"></div>
+            </section>
+            <section id="grade-window-editor" class="records-card grade-window-editor" hidden>
+              <div class="records-heading">
+                <div><h2 id="grade-window-title"></h2><p>Start and end dates are inclusive. Leave both dates blank to close an assessment.</p></div>
+                <button id="grade-window-back-semesters" class="button button-secondary" type="button">Semesters</button>
+              </div>
+              <form id="grade-window-form">
+                <div class="grade-window-grid">
+                  <fieldset class="grade-window-card"><legend>ISA1</legend><label for="isa1-start">Start date</label><input id="isa1-start" type="date"><label for="isa1-end">End date</label><input id="isa1-end" type="date"></fieldset>
+                  <fieldset class="grade-window-card"><legend>ISA2</legend><label for="isa2-start">Start date</label><input id="isa2-start" type="date"><label for="isa2-end">End date</label><input id="isa2-end" type="date"></fieldset>
+                  <fieldset class="grade-window-card"><legend>ESA</legend><label for="esa-start">Start date</label><input id="esa-start" type="date"><label for="esa-end">End date</label><input id="esa-end" type="date"></fieldset>
+                </div>
+                <div class="assignment-footer">
+                  <button id="save-grade-windows" class="button button-primary" type="submit">Save date windows</button>
+                </div>
+                <p id="grade-window-message" class="inline-message" role="status" hidden></p>
+              </form>
+            </section>
+          </section>
+
+          <section id="view-faculty-classes" class="page-view" hidden>
+            <div class="page-heading">
+              <div><span class="eyebrow">TEACHING ASSIGNMENTS</span><h1>Students</h1><p>Choose a subject and semester you teach to view that class.</p></div>
+            </div>
+            <section id="faculty-class-list" class="department-grid" aria-label="Assigned subjects"></section>
+          </section>
+
+          <section id="view-semesters" class="page-view" hidden>
+            <div class="page-heading">
+              <div><span class="eyebrow">STUDENT DIRECTORY</span><h1 id="semester-department-title">Department</h1><p>Select a semester to view its student records.</p></div>
+            </div>
+            <section id="semester-list" class="department-grid" aria-label="Semesters"></section>
+          </section>
+
+          <section id="view-students" class="page-view" hidden>
+            <div class="page-heading">
+              <div><span class="eyebrow">RECORD MANAGEMENT</span><h1 id="student-view-title">Students</h1><p id="student-view-description">View, search, and filter student records.</p></div>
+              <button id="add-student-button" class="button button-primary" type="button">Add Student</button>
+            </div>
+            <section id="student-records-card" class="records-card" aria-labelledby="records-title">
+              <div class="records-heading">
+                <div><div class="title-with-count"><h2 id="records-title">Student Records</h2><span id="records-count" class="count-pill">0</span></div></div>
+                <button id="export-button" class="button button-secondary" type="button">Export CSV</button>
+              </div>
+              <div class="table-toolbar">
+                <div class="search-controls">
+                  <label class="search-box" for="search-input"><span aria-hidden="true">Search</span><input id="search-input" type="search" placeholder="Student ID or name"></label>
+                  <button id="search-button" class="button button-secondary" type="button">Search</button>
+                  <button id="clear-search-button" class="text-button" type="button" hidden>Clear</button>
+                </div>
+                <div class="filters">
+                  <label class="filter-select"><span class="visually-hidden">Filter by course or department</span><select id="course-filter"><option value="">All courses</option></select></label>
+                  <label class="filter-select"><span class="visually-hidden">Filter by semester</span><select id="semester-filter"><option value="">All semesters</option></select></label>
+                </div>
+              </div>
+              <p id="student-list-message" class="inline-message" role="status" hidden></p>
+              <div class="table-wrap">
+                <table id="student-table">
+                  <thead><tr><th scope="col">STUDENT</th><th scope="col">STUDENT ID</th><th scope="col">CONTACT DETAILS</th><th scope="col">COURSE / DEPARTMENT</th><th scope="col">SEMESTER</th><th scope="col" class="action-column">ACTIONS</th></tr></thead>
+                  <tbody id="student-rows"></tbody>
+                </table>
+                <div id="student-empty-state" class="empty-state" hidden><strong id="student-empty-title">No student records found.</strong><p id="student-empty-message">Add a student or change the search and filters.</p></div>
+              </div>
+              <div class="table-footer"><span id="table-summary">Showing 0 students</span><span>Records stored in MySQL</span></div>
+            </section>
+          </section>
+
+          <section id="view-detail" class="page-view" hidden>
+            <div class="page-heading">
+              <div><span class="eyebrow">STUDENT RECORD</span><h1 id="detail-title">Student Details</h1><p>Student information and enrollment details.</p></div>
+              <div class="heading-actions"><button id="detail-edit-button" class="button button-secondary" type="button" hidden>Update</button></div>
+            </div>
+            <section class="detail-card" aria-label="Student details">
+              <dl class="detail-grid">
+                <div><dt>Student ID</dt><dd id="detail-id"></dd></div>
+                <div><dt>Name</dt><dd id="detail-name"></dd></div>
+                <div><dt>Contact Details</dt><dd id="detail-contact"></dd></div>
+                <div><dt>Course / Department</dt><dd id="detail-course"></dd></div>
+                <div><dt>Semester</dt><dd id="detail-semester"></dd></div>
+              </dl>
+            </section>
+          </section>
+
+          <section id="view-grades" class="page-view" hidden>
+            <div class="page-heading">
+              <div><span class="eyebrow">ACADEMIC RECORDS</span><h1 id="grade-view-title">Grades</h1><p id="grade-view-description">Record and update marks for your assigned subject.</p></div>
+            </div>
+            <section class="records-card grades-entry">
+              <div class="records-heading"><div><h2 id="grade-form-title">Record Grade</h2><p id="grade-form-description">Enter marks for your assigned subject.</p></div></div>
+              <p id="grade-window-status" class="inline-message" role="status" hidden></p>
+              <form id="grade-form" class="grade-form">
+                <input id="grade-id" type="hidden">
+                <label for="grade-student">Student <span class="required-mark">*</span><select id="grade-student" required></select></label>
+                <label for="grade-subject">Subject <span class="required-mark">*</span><select id="grade-subject" required></select></label>
+                <label for="grade-component">Assessment <span class="required-mark">*</span><select id="grade-component" required><option value="ISA1">ISA1</option><option value="ISA2">ISA2</option><option value="ESA">ESA</option></select></label>
+                <label for="grade-marks">Marks (0–100) <span class="required-mark">*</span><input id="grade-marks" type="number" min="0" max="100" step="1" required></label>
+                <label id="grade-change-reason-label" for="grade-change-reason" hidden>Reason for grade change <span class="required-mark">*</span><input id="grade-change-reason" maxlength="500" autocomplete="off"></label>
+                <p id="grade-form-error" class="form-error grade-error" role="alert"></p>
+                <div class="form-actions"><button id="cancel-grade-edit" class="button button-secondary" type="button" hidden>Cancel</button><button id="save-grade-button" class="button button-primary" type="submit">Save</button></div>
+              </form>
+              <p id="grade-no-students" class="empty-state" hidden><strong>No students are enrolled in this class.</strong><span>Contact the administrator if you expected students to appear here.</span></p>
+            </section>
+            <section class="records-card grades-table-card">
+              <div class="records-heading"><div><h2>Recorded Grades</h2><p id="grade-table-caption">Select a student to view grades.</p></div></div>
+              <div class="table-wrap">
+                <table id="grades-table"><thead><tr><th scope="col">SUBJECT</th><th scope="col">ASSESSMENT</th><th scope="col">MARKS</th><th scope="col">LAST CHANGE REASON</th><th scope="col" class="action-column">ACTIONS</th></tr></thead><tbody id="grade-rows"></tbody></table>
+                <div id="grade-empty-state" class="empty-state" hidden><strong>No grades recorded.</strong><p>Record a grade for the selected student.</p></div>
+              </div>
+            </section>
+          </section>
+
+          <section id="view-profile" class="page-view" hidden>
+            <div class="page-heading"><div><span class="eyebrow">STUDENT ACCOUNT</span><h1>My Profile</h1><p>Your student information.</p></div></div>
+            <section class="detail-card"><dl class="detail-grid">
+              <div><dt>Student ID</dt><dd id="profile-id"></dd></div><div><dt>Name</dt><dd id="profile-name"></dd></div>
+              <div><dt>Contact Details</dt><dd id="profile-contact"></dd></div><div><dt>Course / Department</dt><dd id="profile-course"></dd></div>
+              <div><dt>Semester</dt><dd id="profile-semester"></dd></div>
+            </dl></section>
+          </section>
+
+          <section id="view-my-grades" class="page-view" hidden>
+            <div class="page-heading"><div><span class="eyebrow">ACADEMIC RECORDS</span><h1>My Grades</h1><p>Your recorded marks.</p></div></div>
+            <section class="records-card">
+              <div class="table-wrap"><table id="my-grades-table"><thead><tr><th scope="col">SUBJECT</th><th scope="col">ASSESSMENT</th><th scope="col">MARKS</th><th scope="col">LAST CHANGE REASON</th></tr></thead><tbody id="my-grade-rows"></tbody></table>
+                <div id="my-grade-empty-state" class="empty-state" hidden><strong>No grades recorded.</strong><p>Your grades will appear here when they are available.</p></div>
+              </div>
+            </section>
+          </section>
+          <footer class="page-footer"><span>Student Record Management System</span><span>Authorized access only</span></footer>
+        </main>
+      </div>
+      <div id="sidebar-scrim" class="sidebar-scrim" hidden></div>
+    </div>
+
+    <dialog id="student-dialog" class="app-dialog">
+      <form id="student-form" novalidate>
+        <div class="dialog-heading"><div><span class="eyebrow">STUDENT RECORD</span><h2 id="student-dialog-title">Add Student</h2></div><button id="close-student-dialog" class="icon-button close-dialog" type="button" aria-label="Close dialog">Close</button></div>
+        <input id="edit-original-id" type="hidden">
+        <label for="student-id">Student ID <span class="required-mark">*</span></label><input id="student-id" maxlength="31" required aria-describedby="student-id-error"><p id="student-id-error" class="field-error" hidden></p>
+        <label for="student-name">Name <span class="required-mark">*</span></label><input id="student-name" maxlength="99" required aria-describedby="student-name-error"><p id="student-name-error" class="field-error" hidden></p>
+        <label for="student-contact">Contact Details <span class="required-mark">*</span></label><input id="student-contact" maxlength="255" required aria-describedby="student-contact-error"><p id="student-contact-error" class="field-error" hidden></p>
+        <label for="student-course">Course / Department <span class="required-mark">*</span></label><select id="student-course" required aria-describedby="student-course-error"><option value="">Select a course</option></select><p id="student-course-error" class="field-error" hidden></p>
+        <label for="student-semester">Semester <span class="required-mark">*</span></label><select id="student-semester" required aria-describedby="student-semester-error"><option value="">Select a semester</option></select><p id="student-semester-error" class="field-error" hidden></p>
+        <div class="student-login-fields">
+          <strong>Student login</strong>
+          <p id="student-login-help">Set the username and password the student will use to sign in.</p>
+          <label for="student-username">Username <span class="required-mark">*</span></label><input id="student-username" maxlength="63" autocomplete="username" required aria-describedby="student-username-error"><p id="student-username-error" class="field-error" hidden></p>
+          <label for="student-password">Password <span id="student-password-required" class="required-mark">*</span></label><input id="student-password" type="password" maxlength="1024" autocomplete="new-password" aria-describedby="student-password-error"><p id="student-password-error" class="field-error" hidden></p>
+        </div>
+        <p id="student-form-error" class="form-error" role="alert"></p>
+        <div class="dialog-actions"><button id="cancel-student-dialog" class="button button-secondary" type="button">Cancel</button><button id="save-student-button" class="button button-primary" type="submit">Save</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="faculty-dialog" class="app-dialog compact-dialog">
+      <form id="faculty-form" novalidate>
+        <div class="dialog-heading"><div><span class="eyebrow">FACULTY ACCOUNT</span><h2>Create Faculty</h2></div><button id="close-faculty-dialog" class="icon-button close-dialog" type="button" aria-label="Close dialog">Close</button></div>
+        <p>Set the username and password the faculty member will use to sign in. You can assign their subjects from Faculty Access.</p>
+        <label for="faculty-username">Username <span class="required-mark">*</span></label>
+        <input id="faculty-username" maxlength="63" autocomplete="username" required>
+        <label for="faculty-password">Password <span class="required-mark">*</span></label>
+        <input id="faculty-password" type="password" minlength="12" maxlength="1024" autocomplete="new-password" required>
+        <p id="faculty-form-error" class="form-error" role="alert"></p>
+        <div class="dialog-actions"><button id="cancel-faculty-dialog" class="button button-secondary" type="button">Cancel</button><button class="button button-primary" type="submit">Create account</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="delete-dialog" class="app-dialog compact-dialog">
+      <form method="dialog"><div class="dialog-heading"><div><span class="eyebrow">CONFIRM DELETION</span><h2>Delete Student</h2></div><button class="icon-button close-dialog" type="submit" value="cancel" aria-label="Close dialog">Close</button></div>
+        <p id="delete-message">Are you sure you want to delete this student record?</p>
+        <div class="dialog-actions"><button id="cancel-delete" class="button button-secondary" type="submit" value="cancel">Cancel</button><button id="confirm-delete" class="button button-danger" type="button">Confirm</button></div>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
