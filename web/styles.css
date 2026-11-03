@@ -299,7 +299,7 @@ tbody tr:hover { background: #f6f8fa; }
 .grade-window-editor > form > .assignment-footer { padding: 0 17px; }
 .faculty-access-card .empty-state { position: static; min-height: 0; padding: 24px 12px; }
 .faculty-access-card .empty-state span { display: block; margin-top: 6px; }
-.grades-entry > .empty-state { padding: 16px; }
+.grades-entry > .empty-state, .attendance-entry > .empty-state { padding: 16px; }
 @media (max-width: 680px) {
   .faculty-access-card { padding: 12px; }
   .faculty-access-card > .records-heading { margin: -12px -12px 14px; }
@@ -327,3 +327,8 @@ tbody tr:hover { background: #f6f8fa; }
 @media (max-width: 680px) {
   .assignment-semesters { grid-template-columns: 1fr; }
 }
+
+.status-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.status-badge.present { background: var(--success-bg); color: var(--success); }
+.status-badge.absent { background: var(--error-bg); color: var(--error); }
+.status-badge.late { background: #fff8e6; color: #9c6c08; }

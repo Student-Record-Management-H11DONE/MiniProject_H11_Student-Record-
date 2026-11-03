@@ -200,7 +200,11 @@
           <section id="view-detail" class="page-view" hidden>
             <div class="page-heading">
               <div><span class="eyebrow">STUDENT RECORD</span><h1 id="detail-title">Student Details</h1><p>Student information and enrollment details.</p></div>
-              <div class="heading-actions"><button id="detail-edit-button" class="button button-secondary" type="button" hidden>Update</button></div>
+              <div class="heading-actions">
+                <button id="detail-edit-button" class="button button-secondary" type="button" hidden>Update</button>
+                <button id="detail-grade-button" class="button button-secondary" type="button" hidden>Grades</button>
+                <button id="detail-attendance-button" class="button button-secondary" type="button" hidden>Attendance</button>
+              </div>
             </div>
             <section class="detail-card" aria-label="Student details">
               <dl class="detail-grid">
@@ -241,6 +245,82 @@
             </section>
           </section>
 
+          <section id="view-attendance" class="page-view" hidden>
+            <div class="page-heading">
+              <div>
+                <span class="eyebrow">ATTENDANCE MANAGEMENT</span>
+                <h1 id="attendance-view-title">Attendance</h1>
+                <p id="attendance-view-description">Record, update, and view student attendance.</p>
+              </div>
+            </div>
+
+            <section id="attendance-entry-card" class="records-card attendance-entry">
+              <div class="records-heading">
+                <div>
+                  <h2 id="attendance-form-title">Record Attendance</h2>
+                  <p id="attendance-form-description">Enter attendance details for your assigned subject.</p>
+                </div>
+              </div>
+              <form id="attendance-form" class="grade-form">
+                <input id="attendance-id" type="hidden">
+                <label for="attendance-student">Student <span class="required-mark">*</span>
+                  <select id="attendance-student" required>
+                    <option value="">Select a student</option>
+                  </select>
+                </label>
+                <label for="attendance-subject">Subject <span class="required-mark">*</span>
+                  <select id="attendance-subject" required></select>
+                </label>
+                <label for="attendance-date">Date <span class="required-mark">*</span>
+                  <input id="attendance-date" type="date" required>
+                </label>
+                <label for="attendance-status">Status <span class="required-mark">*</span>
+                  <select id="attendance-status" required>
+                    <option value="Present">Present</option>
+                    <option value="Absent">Absent</option>
+                    <option value="Late">Late</option>
+                  </select>
+                </label>
+                <p id="attendance-form-error" class="form-error grade-error" role="alert"></p>
+                <div class="form-actions">
+                  <button id="cancel-attendance-edit" class="button button-secondary" type="button" hidden>Cancel</button>
+                  <button id="save-attendance-button" class="button button-primary" type="submit">Save Attendance</button>
+                </div>
+              </form>
+              <p id="attendance-no-students" class="empty-state" hidden>
+                <strong>No students are enrolled in this class.</strong>
+                <span>Contact the administrator if you expected students to appear here.</span>
+              </p>
+            </section>
+
+            <section class="records-card attendance-table-card">
+              <div class="records-heading">
+                <div>
+                  <h2>Recorded Attendance</h2>
+                  <p id="attendance-table-caption">Select a student to view attendance.</p>
+                </div>
+              </div>
+              <p id="attendance-message" class="inline-message" role="status" hidden></p>
+              <div class="table-wrap">
+                <table id="attendance-table" hidden>
+                  <thead>
+                    <tr>
+                      <th scope="col">SUBJECT</th>
+                      <th scope="col">DATE</th>
+                      <th scope="col">STATUS</th>
+                      <th scope="col" class="action-column">ACTIONS</th>
+                    </tr>
+                  </thead>
+                  <tbody id="attendance-rows"></tbody>
+                </table>
+                <div id="attendance-empty-state" class="empty-state" hidden>
+                  <strong>No attendance records found.</strong>
+                  <p>Record attendance for the selected student.</p>
+                </div>
+              </div>
+            </section>
+          </section>
+
           <section id="view-profile" class="page-view" hidden>
             <div class="page-heading"><div><span class="eyebrow">STUDENT ACCOUNT</span><h1>My Profile</h1><p>Your student information.</p></div></div>
             <section class="detail-card"><dl class="detail-grid">
@@ -258,6 +338,34 @@
               </div>
             </section>
           </section>
+          <section id="view-my-attendance" class="page-view" hidden>
+            <div class="page-heading">
+              <div>
+                <span class="eyebrow">ATTENDANCE RECORDS</span>
+                <h1>My Attendance</h1>
+                <p>Your recorded attendance history.</p>
+              </div>
+            </div>
+            <section class="records-card">
+              <div class="table-wrap">
+                <table id="my-attendance-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">SUBJECT</th>
+                      <th scope="col">DATE</th>
+                      <th scope="col">STATUS</th>
+                    </tr>
+                  </thead>
+                  <tbody id="my-attendance-rows"></tbody>
+                </table>
+                <div id="my-attendance-empty-state" class="empty-state" hidden>
+                  <strong>No attendance records found.</strong>
+                  <p>Your attendance records will appear here when recorded.</p>
+                </div>
+              </div>
+            </section>
+          </section>
+
           <footer class="page-footer"><span>Student Record Management System</span><span>Authorized access only</span></footer>
         </main>
       </div>

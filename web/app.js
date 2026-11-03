@@ -10,13 +10,15 @@ const PAGE_LABELS = {
   "faculty-classes": "Students",
   detail: "Student Details",
   grades: "Grades",
+  attendance: "Attendance",
   profile: "My Profile",
-  "my-grades": "My Grades"
+  "my-grades": "My Grades",
+  "my-attendance": "My Attendance"
 };
 const ROLE_PAGES = {
   admin: [["overview", "Overview"], ["students", "Students"], ["faculty-access", "Faculty Access"], ["grade-windows", "Grade Windows"]],
   faculty: [["faculty-classes", "Students"]],
-  student: [["profile", "My Profile"], ["my-grades", "My Grades"]]
+  student: [["profile", "My Profile"], ["my-grades", "My Grades"], ["my-attendance", "My Attendance"]]
 };
 const AVATAR_COLORS = ["avatar-color-0", "avatar-color-1", "avatar-color-2", "avatar-color-3", "avatar-color-4", "avatar-color-5"];
 
@@ -123,6 +125,14 @@ function renderFacultyClassTools() {
   gradeButton.title = `${selectedFacultyClass.course}, Semester ${selectedFacultyClass.semester}`;
   gradeButton.addEventListener("click", () => navigate("grades"));
   nav.append(gradeButton);
+  const attendanceButton = document.createElement("button");
+  attendanceButton.className = "nav-link class-tool-link";
+  attendanceButton.type = "button";
+  attendanceButton.dataset.view = "attendance";
+  attendanceButton.textContent = `Attendance · ${selectedFacultyClass.subject}`;
+  attendanceButton.title = `${selectedFacultyClass.course}, Semester ${selectedFacultyClass.semester}`;
+  attendanceButton.addEventListener("click", () => navigate("attendance"));
+  nav.append(attendanceButton);
 }
 
 function renderNavigation() {
@@ -163,12 +173,16 @@ function captureViewState() {
 }
 
 function navigate(view, { recordHistory = true } = {}) {
-  const allowed = ROLE_PAGES[currentUser.role].some(([key]) => key === view);
+  if (currentUser?.role === "student" && view === "attendance") {
+    view = "my-attendance";
+  }
+  const allowed = (ROLE_PAGES[currentUser.role] || []).some(([key]) => key === view);
   const auxiliaryAllowed =
     (view === "detail" && ["admin", "faculty"].includes(currentUser.role))
     || (["departments", "semesters"].includes(view) && currentUser.role === "admin")
     || (view === "students" && currentUser.role === "faculty" && selectedFacultyClass !== null)
-    || (view === "grades" && currentUser.role === "faculty" && selectedFacultyClass !== null);
+    || (view === "grades" && currentUser.role === "faculty" && selectedFacultyClass !== null)
+    || (view === "attendance" && currentUser.role === "faculty" && selectedFacultyClass !== null);
   if (!allowed && !auxiliaryAllowed) return;
   if (recordHistory && currentView && currentView !== view) {
     viewHistory.push(captureViewState());
@@ -176,7 +190,8 @@ function navigate(view, { recordHistory = true } = {}) {
   currentView = view;
   renderSequence++;
   document.querySelectorAll(".page-view").forEach((page) => { page.hidden = true; });
-  document.querySelector(`#view-${view}`).hidden = false;
+  const targetView = document.querySelector(`#view-${view}`);
+  if (targetView) targetView.hidden = false;
   document.querySelectorAll(".nav-link").forEach((link) => {
     const active = link.dataset.view === view
       || (view === "detail" && ["students", "faculty-classes"].includes(link.dataset.view))
@@ -185,7 +200,7 @@ function navigate(view, { recordHistory = true } = {}) {
     if (active) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   });
-  document.querySelector("#breadcrumb-current").textContent = PAGE_LABELS[view];
+  document.querySelector("#breadcrumb-current").textContent = PAGE_LABELS[view] || view;
   document.querySelector("#back-button").hidden = viewHistory.length === 0;
   document.querySelector("#sidebar").classList.remove("open");
   document.querySelector("#sidebar-scrim").hidden = true;
@@ -199,6 +214,8 @@ function navigate(view, { recordHistory = true } = {}) {
   if (view === "profile") loadProfile();
   if (view === "grades") loadFacultyClassGrades();
   if (view === "my-grades") loadMyGrades();
+  if (view === "attendance") loadFacultyClassAttendance();
+  if (view === "my-attendance") loadMyAttendance();
 }
 
 function goBack() {
@@ -489,6 +506,7 @@ function openFacultyClass(assignedClass) {
   selectedFacultyClass = assignedClass;
   selectedStudentId = "";
   resetGradeForm();
+  resetAttendanceForm();
   activeSearchTerm = "";
   searchInput.value = "";
   document.querySelector("#clear-search-button").hidden = true;
@@ -605,6 +623,17 @@ async function loadStudentDetail(studentId) {
     setStudentDetails(student, "detail");
     document.querySelector("#detail-edit-button").hidden = currentUser.role !== "admin";
     document.querySelector("#detail-edit-button").onclick = () => openStudentDialog(student);
+    const isFacultyClass = currentUser.role === "faculty" && selectedFacultyClass !== null;
+    const gradeBtn = document.querySelector("#detail-grade-button");
+    const attBtn = document.querySelector("#detail-attendance-button");
+    if (gradeBtn) {
+      gradeBtn.hidden = !isFacultyClass;
+      gradeBtn.onclick = () => navigate("grades");
+    }
+    if (attBtn) {
+      attBtn.hidden = !isFacultyClass;
+      attBtn.onclick = () => navigate("attendance");
+    }
     navigate("detail");
   } catch (error) {
     showToast(error.message, "error");
@@ -1244,6 +1273,179 @@ function resetGradeForm() {
   }
 }
 
+
+async function loadFacultyClassAttendance() {
+  if (!selectedFacultyClass) return;
+  const { course, semester, subject } = selectedFacultyClass;
+  document.querySelector("#attendance-view-title").textContent = `${subject} attendance`;
+  document.querySelector("#attendance-view-description").textContent = `${course} · Semester ${semester}`;
+  document.querySelector("#attendance-form-title").textContent = "Record Attendance";
+  document.querySelector("#attendance-form-description").textContent = `Enter attendance details for ${subject}.`;
+  const subjectSelect = document.querySelector("#attendance-subject");
+  subjectSelect.replaceChildren(new Option(subject, subject));
+  subjectSelect.value = subject;
+  subjectSelect.disabled = true;
+
+  try {
+    const params = new URLSearchParams({ course, semester: String(semester) });
+    const { students } = await apiRequest(`/api/students?${params.toString()}`);
+    facultyStudents = students;
+    const studentSelect = document.querySelector("#attendance-student");
+    const previousStudent = selectedStudentId;
+    studentSelect.replaceChildren(new Option("Select a student", ""));
+    students.forEach((student) => {
+      studentSelect.add(new Option(`${student.name} (${student.id})`, student.id));
+    });
+    selectedStudentId = students.some((student) => student.id === previousStudent)
+      ? previousStudent
+      : "";
+    studentSelect.value = selectedStudentId;
+    resetAttendanceForm();
+    document.querySelector("#attendance-no-students").hidden = students.length > 0;
+    document.querySelector("#attendance-form").hidden = students.length === 0;
+    document.querySelector("#attendance-empty-state").hidden = true;
+    await loadAttendance(selectedStudentId, true);
+  } catch (error) {
+    showToast(error.message, "error");
+  }
+}
+
+async function loadAttendance(studentId, editable) {
+  const rows = document.querySelector(editable ? "#attendance-rows" : "#my-attendance-rows");
+  const table = document.querySelector(editable ? "#attendance-table" : "#my-attendance-table");
+  const empty = document.querySelector(editable ? "#attendance-empty-state" : "#my-attendance-empty-state");
+  if (!studentId) {
+    rows.replaceChildren();
+    table.hidden = true;
+    empty.hidden = editable;
+    if (editable) document.querySelector("#attendance-table-caption").textContent = "Select a student to view attendance.";
+    return;
+  }
+  try {
+    const { attendance } = await apiRequest(`/api/students/${encodeURIComponent(studentId)}/attendance`);
+    const visibleAttendance = editable && selectedFacultyClass
+      ? attendance.filter((rec) => rec.subject === selectedFacultyClass.subject)
+      : attendance;
+    rows.replaceChildren(...visibleAttendance.map((rec) => {
+      const row = document.createElement("tr");
+      createCell(row).textContent = rec.subject;
+      createCell(row).textContent = rec.date;
+      const statusCell = createCell(row);
+      const badge = document.createElement("span");
+      badge.className = `status-badge ${rec.status.toLowerCase()}`;
+      badge.textContent = rec.status;
+      statusCell.append(badge);
+
+      if (editable) {
+        const actionCell = createCell(row, "action-column");
+        const update = document.createElement("button");
+        update.className = "text-button";
+        update.type = "button";
+        update.textContent = "Edit";
+        update.setAttribute("aria-label", `Update attendance for ${rec.date}`);
+        update.addEventListener("click", () => {
+          document.querySelector("#attendance-id").value = rec.id;
+          document.querySelector("#attendance-student").value = studentId;
+          document.querySelector("#attendance-subject").value = rec.subject;
+          document.querySelector("#attendance-date").value = rec.date;
+          document.querySelector("#attendance-status").value = rec.status;
+          document.querySelector("#attendance-form-title").textContent = "Update Attendance";
+          document.querySelector("#attendance-form-description").textContent =
+            `Update attendance for ${rec.subject} on ${rec.date}.`;
+          document.querySelector("#save-attendance-button").textContent = "Update Attendance";
+          document.querySelector("#cancel-attendance-edit").hidden = false;
+          document.querySelector("#attendance-form").scrollIntoView({ behavior: "smooth", block: "center" });
+          document.querySelector("#attendance-status").focus({ preventScroll: true });
+        });
+        actionCell.append(update);
+      }
+      return row;
+    }));
+    table.hidden = visibleAttendance.length === 0;
+    empty.hidden = visibleAttendance.length !== 0;
+    if (editable) {
+      document.querySelector("#attendance-table-caption").textContent =
+        `${visibleAttendance.length} attendance ${visibleAttendance.length === 1 ? "record" : "records"} for ${selectedFacultyClass.subject}.`;
+    }
+  } catch (error) {
+    showToast(error.message, "error");
+  }
+}
+
+async function loadMyAttendance() {
+  await loadAttendance(currentUser.studentId, false);
+}
+
+async function saveAttendance(event) {
+  event.preventDefault();
+  const studentId = document.querySelector("#attendance-student").value;
+  const subject = document.querySelector("#attendance-subject").value || (selectedFacultyClass ? selectedFacultyClass.subject : "");
+  const date = document.querySelector("#attendance-date").value;
+  const status = document.querySelector("#attendance-status").value;
+  const message = document.querySelector("#attendance-form-error");
+  message.textContent = "";
+
+  if (!studentId) {
+    message.textContent = "Please select a student.";
+    document.querySelector("#attendance-student").focus();
+    return;
+  }
+  if (!subject) {
+    message.textContent = "Please select a subject.";
+    return;
+  }
+  if (!date) {
+    message.textContent = "Please enter a valid date.";
+    document.querySelector("#attendance-date").focus();
+    return;
+  }
+  if (!status) {
+    message.textContent = "Please select an attendance status.";
+    document.querySelector("#attendance-status").focus();
+    return;
+  }
+
+  const attendanceId = document.querySelector("#attendance-id").value;
+  try {
+    if (attendanceId) {
+      await apiRequest(`/api/attendance/${attendanceId}`, {
+        method: "PUT",
+        body: { subject, date, status }
+      });
+    } else {
+      await apiRequest(`/api/students/${encodeURIComponent(studentId)}/attendance`, {
+        method: "POST",
+        body: { subject, date, status }
+      });
+    }
+    resetAttendanceForm();
+    await loadAttendance(studentId, true);
+    showToast(attendanceId ? "Attendance updated." : "Attendance recorded.");
+  } catch (error) {
+    message.textContent = error.message;
+  }
+}
+
+function resetAttendanceForm() {
+  document.querySelector("#attendance-form").reset();
+  document.querySelector("#attendance-id").value = "";
+  document.querySelector("#attendance-form-error").textContent = "";
+  document.querySelector("#save-attendance-button").textContent = "Save Attendance";
+  document.querySelector("#cancel-attendance-edit").hidden = true;
+  document.querySelector("#attendance-student").value = selectedStudentId;
+  document.querySelector("#attendance-date").value = new Date().toISOString().slice(0, 10);
+  document.querySelector("#attendance-status").value = "Present";
+  if (selectedFacultyClass) {
+    const subjectSelect = document.querySelector("#attendance-subject");
+    subjectSelect.replaceChildren(new Option(selectedFacultyClass.subject, selectedFacultyClass.subject));
+    subjectSelect.value = selectedFacultyClass.subject;
+    subjectSelect.disabled = true;
+    document.querySelector("#attendance-form-title").textContent = "Record Attendance";
+    document.querySelector("#attendance-form-description").textContent =
+      `Enter attendance details for ${selectedFacultyClass.subject}.`;
+  }
+}
+
 async function exportStudents() {
   const query = buildStudentQuery();
   let response;
@@ -1338,6 +1540,15 @@ document.querySelector("#grade-student").addEventListener("change", async (event
   resetGradeForm();
   await loadGrades(selectedStudentId, true);
 });
+document.querySelector("#attendance-form").addEventListener("submit", saveAttendance);
+document.querySelector("#cancel-attendance-edit").addEventListener("click", resetAttendanceForm);
+document.querySelector("#attendance-student").addEventListener("change", async (event) => {
+  selectedStudentId = event.currentTarget.value;
+  document.querySelector("#attendance-id").value = "";
+  resetAttendanceForm();
+  await loadAttendance(selectedStudentId, true);
+});
+
 document.querySelector("#faculty-selector").addEventListener("change", (event) => {
   selectedFacultyId = event.currentTarget.value;
   facultyAssignmentsEditing = false;
