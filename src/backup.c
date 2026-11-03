@@ -77,13 +77,36 @@ int student_storage_save_atomic(const char *path,
         return 0;
     }
 
-    /* 2. Atomically replace the destination file.
-     * Standard portable C: remove old destination if it exists, then rename.
-     */
-    remove(path);
-    if (rename(temp_path, path) != 0) {
-        remove(temp_path);
-        return 0;
+        /* 2. Replace the destination without ever deleting the only good copy.
+     * Move the old file aside, move the new file in, then delete the old one.
+     * If anything fails, the old file is put back. */
+    {
+        char old_path[512];
+        FILE *probe;
+        int had_old = 0;
+
+        snprintf(old_path, sizeof old_path, "%s.old", path);
+        remove(old_path);
+
+        probe = fopen(path, "r");
+        if (probe != NULL) {
+            fclose(probe);
+            had_old = 1;
+            if (rename(path, old_path) != 0) {
+                remove(temp_path);
+                return 0;                    /* original untouched */
+            }
+        }
+        if (rename(temp_path, path) != 0) {
+            if (had_old) {
+                rename(old_path, path);      /* put the original back */
+            }
+            remove(temp_path);
+            return 0;
+        }
+        if (had_old) {
+            remove(old_path);
+        }
     }
 
     return 1;
