@@ -31,14 +31,23 @@ int main(void)
     remove(backup_path);
     remove(restored_path);
 
-    /* 1. NFR-07: Atomic safe save */
+    /* 1. NFR-07: Safe save to a new file */
     CHECK(student_storage_save_atomic(orig_path, r, 2));
     CHECK(student_storage_load(orig_path, out, 10, &count));
     CHECK(count == 2);
     CHECK(strcmp(out[0].student_id, "S101") == 0);
     CHECK(strcmp(out[1].student_id, "S102") == 0);
 
-    /* 2. NFR-06: Create a backup of the records */
+    /* 2. NFR-07: Overwriting an existing file (tests Windows remove + rename behaviour) */
+    set(&r[1], "S103", "Charan", "ISE");
+    CHECK(student_storage_save_atomic(orig_path, r, 2));
+    count = 0;
+    CHECK(student_storage_load(orig_path, out, 10, &count));
+    CHECK(count == 2);
+    CHECK(strcmp(out[0].student_id, "S101") == 0);
+    CHECK(strcmp(out[1].student_id, "S103") == 0);
+
+    /* 3. NFR-06: Create a backup of the records */
     CHECK(backup_create(orig_path, backup_path));
 
     /* Verify backup file can be loaded directly and has identical records */
@@ -46,9 +55,9 @@ int main(void)
     CHECK(student_storage_load(backup_path, out, 10, &count));
     CHECK(count == 2);
     CHECK(strcmp(out[0].student_id, "S101") == 0);
-    CHECK(strcmp(out[1].student_id, "S102") == 0);
+    CHECK(strcmp(out[1].student_id, "S103") == 0);
 
-    /* 3. NFR-06: Simulate primary file corruption */
+    /* 4. NFR-06: Simulate primary file corruption */
     f = fopen(orig_path, "w");
     CHECK(f != NULL);
     if (f != NULL) {
@@ -59,7 +68,7 @@ int main(void)
     count = 0;
     CHECK(!student_storage_load(orig_path, out, 10, &count));
 
-    /* 4. NFR-06: Restore from backup to recover data */
+    /* 5. NFR-06: Restore from backup to recover data */
     CHECK(backup_restore(backup_path, orig_path));
 
     /* Verify recovered primary file has all data back intact */
@@ -67,18 +76,18 @@ int main(void)
     CHECK(student_storage_load(orig_path, out, 10, &count));
     CHECK(count == 2);
     CHECK(strcmp(out[0].student_id, "S101") == 0);
-    CHECK(strcmp(out[1].student_id, "S102") == 0);
+    CHECK(strcmp(out[1].student_id, "S103") == 0);
 
-    /* 5. NFR-07: Crash-safe write failure resistance */
-    /* Attempt to atomically save duplicate IDs (must be rejected) */
+    /* 6. NFR-07: Crash-safe write failure resistance */
+    /* Attempt to save duplicate IDs (must be rejected) */
     set(&r[1], "s101", "DuplicateID", "ECE");
     CHECK(!student_storage_save_atomic(orig_path, r, 2));
 
-    /* Verify existing orig_path was NOT corrupted or overwritten by rejected write */
+    /* Verify existing orig_path was NOT corrupted or overwritten by rejected save */
     count = 0;
     CHECK(student_storage_load(orig_path, out, 10, &count));
     CHECK(count == 2);
-    CHECK(strcmp(out[1].student_id, "S102") == 0); /* Still Bhavesh, not DuplicateID */
+    CHECK(strcmp(out[1].student_id, "S103") == 0); /* Still Charan, not DuplicateID */
 
     /* Cleanup temporary test files */
     remove(orig_path);
