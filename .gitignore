@@ -31,3 +31,4 @@ __pycache__/
 1.zip
 backend.zip
 *.old
+.coverage
