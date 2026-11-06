@@ -45,6 +45,23 @@ class ApiError(Exception):
         self.message = message
 
 
+def _load_env_file():
+    env_path = ROOT / ".env"
+    if env_path.exists():
+        try:
+            with open(env_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        k, v = line.split("=", 1)
+                        os.environ.setdefault(k.strip(), v.strip().strip("'\""))
+        except Exception:
+            pass
+
+
+_load_env_file()
+
+
 def mysql_connection():
     config = {
         "host": os.getenv("MYSQL_HOST", "127.0.0.1"),
