@@ -186,6 +186,29 @@ ACCOUNTS = [
     ("student2", "student234", "student", "S002"),
 ]
 
+DEFAULT_FACULTY_ASSIGNMENTS = [
+    ("faculty1", "Computer Science", 2, "Object-Oriented Programming"),
+    ("faculty1", "Computer Science", 2, "Data Structures"),
+    ("faculty1", "Computer Science", 2, "Computer Organization"),
+    ("faculty1", "Computer Science", 2, "Linear Algebra for Computing"),
+    ("faculty2", "Information Technology", 3, "Web Application Development"),
+    ("faculty2", "Information Technology", 3, "Systems Administration"),
+    ("faculty3", "Electronics", 1, "Electronic Devices"),
+    ("faculty3", "Electronics", 1, "Circuit Analysis I"),
+    ("faculty4", "Computer Science", 4, "Computer Networks"),
+    ("faculty4", "Computer Science", 4, "Software Engineering"),
+    ("faculty5", "Business Administration", 2, "Organizational Behaviour"),
+    ("faculty5", "Business Administration", 2, "Financial Accounting II"),
+    ("faculty6", "Information Technology", 1, "Web Technologies I"),
+    ("faculty6", "Information Technology", 1, "Information Systems"),
+    ("faculty7", "Computer Science", 1, "Programming Fundamentals"),
+    ("faculty7", "Computer Science", 1, "Discrete Mathematics"),
+    ("faculty8", "Business Administration", 1, "Principles of Management"),
+    ("faculty8", "Business Administration", 1, "Financial Accounting I"),
+    ("faculty9", "Electronics", 2, "Analog Circuits"),
+    ("faculty9", "Electronics", 2, "Signals and Systems"),
+]
+
 
 def seed_demo_data():
     all_students = STUDENTS + generate_sample_students()
@@ -219,6 +242,74 @@ def seed_demo_data():
                         "VALUES (%s, %s, %s, %s)",
                         (username, generate_password_hash(password), role, student_id),
                     )
+
+                # Seed assignments for all 9 demo faculty members
+                cursor.execute("SELECT username, user_id FROM users WHERE role = 'faculty'")
+                faculty_map = {row[0]: row[1] for row in cursor.fetchall()}
+
+                cursor.execute("SELECT user_id FROM users WHERE username = 'admin'")
+                admin_row = cursor.fetchone()
+                admin_id = admin_row[0] if admin_row else 1
+
+                for username, course, semester, subject in DEFAULT_FACULTY_ASSIGNMENTS:
+                    faculty_id = faculty_map.get(username)
+                    if faculty_id:
+                        cursor.execute(
+                            "INSERT IGNORE INTO faculty_assignments (user_id, course, semester, subject) "
+                            "VALUES (%s, %s, %s, %s)",
+                            (faculty_id, course, semester, subject),
+                        )
+
+                # Open active assessment grade windows so grading works out of the box
+                assigned_classes = {(course, semester) for _, course, semester, _ in DEFAULT_FACULTY_ASSIGNMENTS}
+                today = date.today()
+                window_start = today - timedelta(days=30)
+                window_end = today + timedelta(days=60)
+                for course, semester in assigned_classes:
+                    for component in ("ISA1", "ISA2", "ESA"):
+                        cursor.execute(
+                            "INSERT INTO grade_windows (course, semester, component, start_date, end_date, updated_by) "
+                            "VALUES (%s, %s, %s, %s, %s, %s) "
+                            "ON DUPLICATE KEY UPDATE start_date = VALUES(start_date), end_date = VALUES(end_date)",
+                            (course, semester, component, window_start, window_end, admin_id),
+                        )
+
+                # Seed sample attendance records (FR-15, FR-16, FR-17)
+                demo_attendance = [
+                    ("S001", "Object-Oriented Programming", today - timedelta(days=7), "Present"),
+                    ("S001", "Object-Oriented Programming", today - timedelta(days=6), "Present"),
+                    ("S001", "Object-Oriented Programming", today - timedelta(days=5), "Present"),
+                    ("S001", "Object-Oriented Programming", today - timedelta(days=4), "Present"),
+                    ("S001", "Object-Oriented Programming", today - timedelta(days=3), "Absent"),
+                    ("S001", "Object-Oriented Programming", today - timedelta(days=2), "Present"),
+                    ("S001", "Object-Oriented Programming", today - timedelta(days=1), "Present"),
+                    ("S001", "Data Structures", today - timedelta(days=5), "Present"),
+                    ("S001", "Data Structures", today - timedelta(days=3), "Present"),
+                    ("S001", "Data Structures", today - timedelta(days=1), "Present"),
+                    ("S002", "Web Application Development", today - timedelta(days=5), "Present"),
+                    ("S002", "Web Application Development", today - timedelta(days=3), "Present"),
+                    ("S002", "Web Application Development", today - timedelta(days=1), "Present"),
+                ]
+                cursor.executemany(
+                    "INSERT IGNORE INTO attendance (student_id, subject, attendance_date, status) "
+                    "VALUES (%s, %s, %s, %s)",
+                    demo_attendance,
+                )
+
+                # Seed sample grades (FR-14)
+                demo_grades = [
+                    ("S001", "Computer Science", 2, "Object-Oriented Programming", "ISA1", 22),
+                    ("S001", "Computer Science", 2, "Object-Oriented Programming", "ISA2", 24),
+                    ("S001", "Computer Science", 2, "Data Structures", "ISA1", 21),
+                    ("S001", "Computer Science", 2, "Data Structures", "ISA2", 23),
+                    ("S002", "Information Technology", 3, "Web Application Development", "ISA1", 23),
+                ]
+                cursor.executemany(
+                    "INSERT IGNORE INTO grades (student_id, course, semester, subject, component, marks) "
+                    "VALUES (%s, %s, %s, %s, %s, %s)",
+                    demo_grades,
+                )
+
                 connection.commit()
             finally:
                 cursor.close()

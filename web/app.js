@@ -152,7 +152,8 @@ function renderNavigation() {
   }
   renderFacultyClassTools();
   document.querySelector("#user-role").textContent = currentUser.roleLabel;
-  document.querySelector("#sidebar-role").textContent = currentUser.roleLabel;
+  const sidebarRole = document.querySelector("#sidebar-role");
+  if (sidebarRole) sidebarRole.textContent = currentUser.roleLabel;
   document.querySelector("#user-name").textContent = currentUser.username;
   document.querySelector("#user-avatar").textContent = initials(currentUser.username);
   document.querySelector("#add-student-button").hidden = currentUser.role !== "admin";
@@ -849,7 +850,7 @@ async function loadFacultyClassGrades() {
     });
     selectedStudentId = students.some((student) => student.id === previousStudent)
       ? previousStudent
-      : "";
+      : (students.length ? students[0].id : "");
     studentSelect.value = selectedStudentId;
     resetGradeForm();
     const componentSelect = document.querySelector("#grade-component");
@@ -1156,7 +1157,6 @@ async function loadGrades(studentId, editable) {
       createCell(row).textContent = grade.subject;
       createCell(row).textContent = grade.component;
       createCell(row).textContent = String(grade.marks);
-      createCell(row).textContent = grade.lastChangeReason || "—";
       if (editable) {
         const actionCell = createCell(row, "action-column");
         const update = document.createElement("button");
@@ -1298,7 +1298,7 @@ async function loadFacultyClassAttendance() {
     });
     selectedStudentId = students.some((student) => student.id === previousStudent)
       ? previousStudent
-      : "";
+      : (students.length ? students[0].id : "");
     studentSelect.value = selectedStudentId;
     resetAttendanceForm();
     document.querySelector("#attendance-no-students").hidden = students.length > 0;
@@ -1363,10 +1363,21 @@ async function loadAttendance(studentId, editable) {
     }));
     table.hidden = visibleAttendance.length === 0;
     empty.hidden = visibleAttendance.length !== 0;
-    if (editable) {
-      document.querySelector("#attendance-table-caption").textContent =
-        `${visibleAttendance.length} attendance ${visibleAttendance.length === 1 ? "record" : "records"} for ${selectedFacultyClass.subject}.`;
-    }
+    const totalCount = visibleAttendance.length;
+      const presentCount = visibleAttendance.filter((rec) => rec.status === "Present").length;
+      const absentCount = visibleAttendance.filter((rec) => rec.status === "Absent").length;
+      const attendancePct = totalCount ? Math.round((presentCount / totalCount) * 100) : 0;
+      if (editable) {
+        document.querySelector("#attendance-table-caption").textContent =
+          `${totalCount} attendance ${totalCount === 1 ? "record" : "records"} for ${selectedFacultyClass.subject} (Present: ${presentCount}, Absent: ${absentCount} · Attendance: ${attendancePct}%).`;
+      } else {
+        const summaryEl = document.querySelector("#my-attendance-summary");
+        if (summaryEl) {
+          summaryEl.textContent = totalCount
+            ? `Overall Attendance: ${attendancePct}% (${presentCount} Present, ${absentCount} Absent out of ${totalCount} recorded classes).`
+            : "Your recorded attendance history.";
+        }
+      }
   } catch (error) {
     showToast(error.message, "error");
   }
