@@ -48,8 +48,7 @@
           <nav id="class-tool-nav" class="side-nav"></nav>
         </section>
         <div class="sidebar-bottom">
-          <div class="sidebar-help"><strong id="sidebar-role">Account</strong><p>Student Record Management System</p></div>
-          <button id="logout-button" class="logout-button" type="button">Sign out</button>
+                    <button id="logout-button" class="logout-button" type="button">Sign out</button>
         </div>
       </aside>
 
@@ -239,7 +238,7 @@
             <section class="records-card grades-table-card">
               <div class="records-heading"><div><h2>Recorded Grades</h2><p id="grade-table-caption">Select a student to view grades.</p></div></div>
               <div class="table-wrap">
-                <table id="grades-table"><thead><tr><th scope="col">SUBJECT</th><th scope="col">ASSESSMENT</th><th scope="col">MARKS</th><th scope="col">LAST CHANGE REASON</th><th scope="col" class="action-column">ACTIONS</th></tr></thead><tbody id="grade-rows"></tbody></table>
+                <table id="grades-table"><thead><tr><th scope="col">SUBJECT</th><th scope="col">ASSESSMENT</th><th scope="col">MARKS</th><th scope="col" class="action-column">ACTIONS</th></tr></thead><tbody id="grade-rows"></tbody></table>
                 <div id="grade-empty-state" class="empty-state" hidden><strong>No grades recorded.</strong><p>Record a grade for the selected student.</p></div>
               </div>
             </section>
@@ -278,7 +277,7 @@
                   <select id="attendance-status" required>
                     <option value="Present">Present</option>
                     <option value="Absent">Absent</option>
-                    <option value="Late">Late</option>
+
                   </select>
                 </label>
                 <p id="attendance-form-error" class="form-error grade-error" role="alert"></p>
@@ -333,7 +332,7 @@
           <section id="view-my-grades" class="page-view" hidden>
             <div class="page-heading"><div><span class="eyebrow">ACADEMIC RECORDS</span><h1>My Grades</h1><p>Your recorded marks.</p></div></div>
             <section class="records-card">
-              <div class="table-wrap"><table id="my-grades-table"><thead><tr><th scope="col">SUBJECT</th><th scope="col">ASSESSMENT</th><th scope="col">MARKS</th><th scope="col">LAST CHANGE REASON</th></tr></thead><tbody id="my-grade-rows"></tbody></table>
+              <div class="table-wrap"><table id="my-grades-table"><thead><tr><th scope="col">SUBJECT</th><th scope="col">ASSESSMENT</th><th scope="col">MARKS</th></tr></thead><tbody id="my-grade-rows"></tbody></table>
                 <div id="my-grade-empty-state" class="empty-state" hidden><strong>No grades recorded.</strong><p>Your grades will appear here when they are available.</p></div>
               </div>
             </section>
@@ -343,7 +342,7 @@
               <div>
                 <span class="eyebrow">ATTENDANCE RECORDS</span>
                 <h1>My Attendance</h1>
-                <p>Your recorded attendance history.</p>
+                <p id="my-attendance-summary">Your recorded attendance history.</p>
               </div>
             </div>
             <section class="records-card">
@@ -366,8 +365,7 @@
             </section>
           </section>
 
-          <footer class="page-footer"><span>Student Record Management System</span><span>Authorized access only</span></footer>
-        </main>
+                  </main>
       </div>
       <div id="sidebar-scrim" class="sidebar-scrim" hidden></div>
     </div>

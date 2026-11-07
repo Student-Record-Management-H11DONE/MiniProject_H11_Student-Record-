@@ -71,6 +71,7 @@ def mysql_connection():
         "database": os.getenv("MYSQL_DATABASE", "student_records"),
         "connection_timeout": 5,
         "charset": "utf8mb4",
+        "buffered": True,
     }
     ssl_ca = os.getenv("MYSQL_SSL_CA")
     if ssl_ca:
@@ -167,11 +168,13 @@ def require_faculty_assignment(cursor, user, course, semester, subject=None):
     if subject is not None:
         query += " AND subject = %s"
         values.append(subject)
+    query += " LIMIT 1"
     cursor.execute(
         query,
         tuple(values),
     )
-    if cursor.fetchone() is None:
+    rows = cursor.fetchall()
+    if not rows:
         if subject is None:
             raise ApiError(403, "You are not assigned to this department and semester.")
         raise ApiError(403, "You are not assigned to this subject.")
@@ -199,10 +202,11 @@ def require_open_grade_window(cursor, course, semester, component):
     cursor.execute(
         "SELECT 1 FROM grade_windows "
         "WHERE course = %s AND semester = %s AND component = %s "
-        "AND CURRENT_DATE BETWEEN start_date AND end_date",
+        "AND CURRENT_DATE BETWEEN start_date AND end_date LIMIT 1",
         (course, semester, component),
     )
-    if cursor.fetchone() is None:
+    rows = cursor.fetchall()
+    if not rows:
         raise ApiError(403, f"Grade entry for {component} is outside its admin-set date window.")
 
 

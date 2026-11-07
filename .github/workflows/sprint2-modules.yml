@@ -1,0 +1,36 @@
+name: Sprint 2 Grades and Attendance Tests
+
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  sprint2-modules:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Grades Module
+        run: gcc -std=c99 -Wall -Wextra -Isrc -o test_grades tests/test_grades.c src/grades.c
+
+      - name: Run Grades Tests
+        run: ./test_grades
+
+      - name: Build Attendance Module
+        run: gcc -std=c99 -Wall -Wextra -Isrc -o test_attendance tests/test_attendance.c src/attendance.c
+
+      - name: Run Attendance Tests
+        run: ./test_attendance
+
+      - name: Build Complete C Application
+        run: gcc -std=c99 -Wall -Wextra -Isrc -o srs_app src/main.c src/auth.c src/ui.c src/actions_stub_remaining.c src/validation.c src/integrity.c src/student_storage.c src/grades.c src/grades_action.c src/attendance.c src/attendance_action.c src/search_action.c src/filter_action.c
