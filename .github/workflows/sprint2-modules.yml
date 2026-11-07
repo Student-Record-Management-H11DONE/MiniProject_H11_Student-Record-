@@ -1,4 +1,3 @@
-
 name: Sprint 2 Grades and Attendance Tests
 
 on:
@@ -34,4 +33,4 @@ jobs:
         run: ./test_attendance
 
       - name: Build Complete C Application
-        run: gcc -std=c99 -Wall -Wextra -Isrc -o srs_app src/main.c src/auth.c src/ui.c src/actions_stub_remaining.c src/validation.c src/integrity.c src/student_storage.c src/grades.c src/grades_action.c src/attendance.c src/attendance_action.c
+        run: gcc -std=c99 -Wall -Wextra -Isrc -o srs_app src/main.c src/auth.c src/ui.c src/actions_stub_remaining.c src/validation.c src/integrity.c src/student_storage.c src/grades.c src/grades_action.c src/attendance.c src/attendance_action.c src/search_action.c src/filter_action.c
